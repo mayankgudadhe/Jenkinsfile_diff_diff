@@ -1,0 +1,24 @@
+pipeline {
+    agent any 
+    stages {
+        stage ("Parallel"){
+            parallel {
+                stage ("stage-1") {
+                    steps {
+                        sleep 10
+                    }
+                }
+                stage ("Stage-2") {
+                    steps {
+                        sleep 10
+                    }
+                }
+                stage ("Stage -3") {
+                    steps {
+                        sleep 10
+                    }
+                }
+            }
+        }
+    }
+}
