@@ -1,0 +1,32 @@
+pipeline {
+    agent any 
+    parameters {
+        string(name: 'Branch',defaultValue: '2024-Q1')
+        string(name: 'Branch1',defaultValue: '2024-Q2')
+    }
+    stages {
+        stage ("Slave-1") {
+            agent {
+                label {
+                    label "slave-1"
+                    customWorkspace "/usr/local/apache2/htdocs"
+                }
+            }
+            steps {
+                git branch : "${params.Branch}" ,url : "https://github.com/mayankgudadhe/Assignment-27-06-24.git"
+            }
+        }
+        stage ("Slave-2") {
+            agent {
+                label {
+                    label "slave-2"
+                    customWorkspace "/usr/local/apache2/htdocs"
+                }
+            }
+            steps {
+                git branch : "${params.Branch1}" ,url : "https://github.com/mayankgudadhe/Assignment-27-06-24.git"
+            }
+        }
+        
+    }
+}
