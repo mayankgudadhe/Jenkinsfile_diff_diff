@@ -1,0 +1,175 @@
+1.	Cloning the remote repo and build using maven , all script written in pipeline job
+
+pipeline {
+    agent {
+        label {
+            label "built-in"
+            customWorkspace "/mnt/test"
+        }
+    }
+    stages {
+        stage ("Install software") {
+            steps {
+                sh "yum install git -y"
+                sh "yum install maven -y"
+            }
+        }
+         stage ("WS Clean") {
+            steps {
+                sh "rm -rf *"
+                sh "rm -rf /root/.m2/repository/"
+            }
+         }
+        stage ("Clone project") {
+            steps {
+                git 'https://github.com/Shantanumajan6/project.git'
+            }
+        }
+        stage ("Build") {
+            steps {
+                sh "mvn clean install"
+            }
+        }
+        stage ("Deploy") {
+            steps {
+                sh "cp -R target/LoginWebApp.war /root/server/apache-tomcat-9.0.90/webapps/"
+            }
+        }
+    }
+}
+
+2.	How we clone different branch in pipeline with parameter
+pipeline {
+    agent {
+        label {
+            label "built-in"
+            customWorkspace "/mnt/clone"
+        }
+    }
+    parameters {
+        string(name: 'BRANCH' )
+        string(name :'BRANCH1')
+    }
+    stages {
+        stage ("Cloning") {
+            steps {
+                git branch : "${params.BRANCH}" , url : "https://github.com/Shantanumajan6/project.git"
+                git branch : "${params.BRANCH1}" , url : "https://github.com/mayankgudadhe/jenkins-repo-shantanu-sir.git"
+            }
+        }
+    }
+}
+pipeline {
+    agent {
+        label {
+            label "built-in"
+            customWorkspace "/mnt/clone"
+        }
+    }
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to build')
+        string(name: 'BRANCH1', defaultValue: 'Dev', description: 'Branch to build')
+    }
+    stages {
+        stage ("Cloning") {
+            steps {
+                git branch : "${params.BRANCH}" , url: "https://github.com/Shantanumajan6/project.git"
+                git branch : "${params.BRANCH1}" ,url: "https://github.com/mayankgudadhe/jenkins-repo-shantanu-sir.git"
+            }
+        }
+    }
+}
+3.	Build with different different parameters 
+pipeline {
+    agent any
+    parameters {
+        booleanParam(name: 'Build', defaultValue: true , description: 'should you want to build the project ?')
+    }
+    stages {
+        stage ('Ask_to_client') {
+            steps {
+                script {
+                    if (params.Build) {
+                        sh "yum install git -y"
+                    }
+                    else {
+                        echo "Not want to build"
+                    }
+                }
+            }
+        }
+    }
+}
+pipeline {
+    agent any 
+    parameters {
+        choice(name: 'Environment',choices:['Dev' , 'Prod ' , 'QA' ,'UAT'],description: 'Select your environment')
+    }
+    stages {
+        stage ("Deployment") {
+            steps {
+                echo "Deploying to ${params.Environment}"
+            }
+        }
+    }
+}
+pipeline {
+    agent any 
+    parameters {
+        file(name: 'Upload',description: 'Select file to upload')
+    }
+    stages {
+        stage ("File upload") {
+            steps {
+                script { 
+                    def fileContent = readFile file : "${params.Upload}"
+                        echo "File content:\n${fileContent}"
+        }
+    }
+}
+    }
+}
+
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'USERNAME', defaultValue: 'admin', description: 'Username for the deployment')
+        password(name: 'PASSWORD', defaultValue: 'password', description: 'Password for the deployment')
+        choice(name: 'BRANCH', choices: ['main', 'develop', 'feature'], description: 'Git branch to build')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests after build')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: "${params.BRANCH}", url: 'https://github.com/your-repo/your-project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                // Add build steps here
+            }
+        }
+        stage('Test') {
+            when {
+                expression {
+                    return params.RUN_TESTS
+                }
+            }
+            steps {
+                echo 'Running tests...'
+                // Add test steps here
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "Deploying with username: ${params.USERNAME}"
+                // Securely use the password and other parameters for deployment
+            }
+        }
+    }
+}
+
