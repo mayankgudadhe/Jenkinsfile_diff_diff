@@ -1,0 +1,38 @@
+pipeline {
+    agent {
+        label "Slave-1"
+    } 
+    stages {
+        stage ("Seq-1"){
+            steps {
+                sh rm -rf *
+                sh 'mkdir mayank'
+            }
+        }
+        stage ("Parallel") {
+            parallel {
+                stage ("stage-1") {
+                    steps {
+                        sleep 10
+                    }
+                }
+                stage ("Stage-2") {
+                    steps {
+                        sleep 10
+                    }
+                }
+                stage ("Stage -3") {
+                    steps {
+                        sleep 10
+                    }
+                }
+            }
+        }
+        stage ("Seq-2") {
+            steps {
+                echo "Hello"
+                sleep 10
+            }
+        }
+    }
+}
