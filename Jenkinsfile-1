@@ -1,0 +1,42 @@
+pipeline {
+    agent {
+        label {
+            label "built-in"
+            customWorkspace "/mnt/main"
+        }
+    }
+     parameters {
+        string(name: 'Branch',defaultValue: 'main')
+        string(name: 'Branch1',defaultValue: '2024-Q1')
+        string(name: 'Branch2',defaultValue: '2024-Q2')
+    }
+    stages {
+        stage ("main") {
+            steps {
+                git branch : "${params.Branch}" ,url : "https://github.com/mayankgudadhe/Assignment-27-06-24.git"
+            }
+        }
+        stage ("2024-Q1") {
+            steps {
+                dir ("/mnt/2024-Q1") {
+                git branch : "${params.Branch1}" ,url : "https://github.com/mayankgudadhe/Assignment-27-06-24.git"
+            }
+            }
+        }
+        stage ("2024-Q2") {
+            steps {
+                dir ("/mnt/2024-Q2") {
+                git branch : "${params.Branch2}" ,url : "https://github.com/mayankgudadhe/Assignment-27-06-24.git"
+            }
+            }
+        }
+        stage ("Deploying stage") {
+            steps {
+                sh "docker cp /mnt/main/index.html cont-1:/usr/local/apache2/htdocs/"
+                sh "sudo docker cp /mnt/2024-Q1/index.html cont-2:/usr/local/apache2/htdocs/"
+                sh "sudo docker cp /mnt/2024-Q2/index.html cont-3:/usr/local/apache2/htdocs/"
+            }
+        }
+        
+    }
+}
